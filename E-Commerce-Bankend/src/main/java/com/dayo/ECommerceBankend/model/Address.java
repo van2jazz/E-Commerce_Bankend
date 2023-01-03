@@ -20,10 +20,10 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer addressId;
 
-    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Input a valid street no")
+    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Input a valid street number")
     private String streetNo;
 
-    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Not a valid building name")
+    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Not a valid Street name")
     private String streetName;
 
     @NotNull

@@ -29,7 +29,7 @@ public class CustomerController {
         return new ResponseEntity<>(customerService.getLoggedInCustomerDetails(token), HttpStatus.ACCEPTED);
     }
 
-    //to update a customer
+    //To update a customer
     @PutMapping("/customer")
     public ResponseEntity<Customer> updateCustomerHandler(@Valid @RequestBody CustomerUpdateDTO customerUpdate, @RequestHeader("token") String token ){
         return new ResponseEntity<Customer>(customerService.updateCustomer(customerUpdate, token), HttpStatus.ACCEPTED);
@@ -47,13 +47,13 @@ public class CustomerController {
         return new ResponseEntity<>(customerService.updateCustomerPassword(customerDto, token), HttpStatus.ACCEPTED);
     }
 
-    // To Add or update new customer Address
+    //To Add or update new customer Address
     @PutMapping("/customer/update/address")
     public ResponseEntity<Customer> updateAddressHandler(@Valid @RequestBody Address address, @RequestParam("type") String type, @RequestHeader("token") String token){
         return new ResponseEntity<>(customerService.updateAddress(address, type, token), HttpStatus.ACCEPTED);
     }
 
-    // To update Credit card details
+    //To update Credit card details
     @PutMapping("/customer/update/card")
     public ResponseEntity<Customer> updateCreditCardHandler(@RequestHeader("token") String token, @Valid @RequestBody CreditCard newCard){
         return new ResponseEntity<>(customerService.updateCreditCardDetails(token, newCard), HttpStatus.ACCEPTED);

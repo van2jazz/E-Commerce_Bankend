@@ -17,19 +17,16 @@ import java.util.Optional;
 
 @Service
 public class CustomerServiceImpl implements CustomerService{
-
     @Autowired
     private CustomerDao customerDao;
 
     @Autowired
     private SessionDao sessionDao;
 
-
-
-
+    @Autowired
+    private LoginLogoutService loginService;
 
     //To add a new customer
-
     @Override
     public Customer addCustomer(Customer customer){
 
@@ -43,22 +40,23 @@ public class CustomerServiceImpl implements CustomerService{
 
         customer.setOrders(new ArrayList<Order>());
 
-        Optional<Customer> existing = customerDao.findByMobileNo(customer.getMobileNumber());
+        Optional<Customer> existing = customerDao.findByMobileNo(customer.getMobileNo());
 
         if (existing.isPresent())
-            throw new CustomerException("Customer Exist. Please login with your mobile number");
+
+            throw new CustomerException("Customer exists. Please login with mobile number");
 
         customerDao.save(customer);
 
         return customer;
     }
 
-
     //To get a customer mobile number
 
-    public Customer getLoggedInCustomerDetails(String token){
+    @Override
+    public Customer getLoggedInCustomerDetails(String token) {
 
-        if (token.contains("customer") ==false) {
+        if (token.contains("customer") == false) {
             throw new LoginException("Invalid session token for customer");
         }
 
@@ -69,12 +67,13 @@ public class CustomerServiceImpl implements CustomerService{
         Optional<Customer> opt = customerDao.findById(user.getUserId());
 
         if (opt.isEmpty())
-            throw new CustomerNotFoundException("Customer does no exist");
+            throw new CustomerNotFoundException("Customer doe not exist");
 
         Customer existingCustomer = opt.get();
 
         return existingCustomer;
     }
+
 
     //To get all Customer - only seller or admin can get all customers - check validity of seller token
 
@@ -87,7 +86,7 @@ public class CustomerServiceImpl implements CustomerService{
             throw new LoginException("Invalid session token");
         }
 
-        loginService.checkTokenService(token);
+        loginService.checkTokenStatus(token);
 
         List<Customer> customers = customerDao.findAll();
 
@@ -110,7 +109,7 @@ public class CustomerServiceImpl implements CustomerService{
 
         loginService.checkTokenStatus(token);
 
-        Optional<Customer> opt = customerDao.findByMobileNumber(customer.getMobileNumber());
+        Optional<Customer> opt = customerDao.findByMobileNo(customer.getMobileNo());
 
         Optional<Customer> res = customerDao.findByEmailId(customer.getEmailId());
 
@@ -165,6 +164,9 @@ public class CustomerServiceImpl implements CustomerService{
 
     }
 
+
+    // Method to update customer mobile number - details updated for current logged in user
+
     @Override
     public Customer updateCustomerMobileNoOrEmailId(CustomerUpdateDTO customerUpdateDTO, String token) throws CustomerNotFoundException {
 
@@ -197,7 +199,6 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     // Method to update password - based on current token
-
     @Override
     public SessionDTO updateCustomerPassword(CustomerDTO customerDTO, String token) {
 

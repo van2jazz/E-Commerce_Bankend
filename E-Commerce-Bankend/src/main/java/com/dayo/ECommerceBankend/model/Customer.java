@@ -12,16 +12,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Entity
+
 public class Customer {
 
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
-    private Integer CustomerId;
+    private Integer customerId;
 
     @NotNull(message = "Cannot be blanked")
     @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your first name")
@@ -32,7 +33,7 @@ public class Customer {
     private String lastName;
 
     @NotNull(message = "Enter Mobile Number")
-    @Pattern(regexp = "[2345]{1}[0-9]{9}", message = "Enter a valid 10 digits mobile number")
+    @Pattern(regexp = "[234]{1}[0-9]{10}", message = "Enter a valid mobile number")
     private String mobileNo;
 
     @NotNull(message = "Enter your email id")
@@ -61,7 +62,7 @@ public class Customer {
     private Map<String, Address> address = new HashMap<>();
 
 
-    //OrderDao Relationship
+    //Order Relationship
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
     private List<Order> orders = new ArrayList<>();
 

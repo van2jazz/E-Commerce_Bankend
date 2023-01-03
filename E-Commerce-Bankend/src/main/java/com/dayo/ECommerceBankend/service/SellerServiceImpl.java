@@ -1,13 +1,18 @@
 package com.dayo.ECommerceBankend.service;
 
+import com.dayo.ECommerceBankend.exception.LoginException;
 import com.dayo.ECommerceBankend.exception.SellerException;
 import com.dayo.ECommerceBankend.model.Seller;
+import com.dayo.ECommerceBankend.model.SellerDTO;
+import com.dayo.ECommerceBankend.model.SessionDTO;
+import com.dayo.ECommerceBankend.model.UserSession;
 import com.dayo.ECommerceBankend.repository.SellerDao;
 import com.dayo.ECommerceBankend.repository.SessionDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SellerServiceImpl implements SellerService {
@@ -62,7 +67,9 @@ public class SellerServiceImpl implements SellerService {
 
         loginService.checkTokenStatus(token);
 
-        Seller existingSeller=sellerDao.findById(seller.getSellerId()).orElseThrow(()-> new SellerException("Seller not found for this Id: "+seller.getSellerId()));
+        Seller existingSeller = sellerDao.findById(seller.getSellerId()).orElseThrow(()-> new SellerException
+                ("Seller not found for this Id: "+seller.getSellerId()));
+
         Seller newSeller= sellerDao.save(seller);
         return newSeller;
     }
@@ -120,7 +127,7 @@ public class SellerServiceImpl implements SellerService {
             return sellerDao.save(existingSeller);
         }
         else {
-            throw new SellerException("Error occured in updating mobile. Please enter correct password");
+            throw new SellerException("Error occurred in updating mobile. Please enter correct password");
         }
 
     }

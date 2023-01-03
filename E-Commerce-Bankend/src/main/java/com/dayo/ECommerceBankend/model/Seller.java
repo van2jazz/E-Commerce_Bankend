@@ -23,7 +23,7 @@ public class Seller {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer SellerId;
+    private Integer sellerId;
 
     @NotNull(message = "Enter your firstName")
     @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your first name")
@@ -35,7 +35,7 @@ public class Seller {
 
     @NotNull(message = "Enter Mobile Number")
     @Column(unique = true)
-    @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter a valid 10 digits mobile number")
+    @Pattern(regexp = "[234]{1}[0-9]{10}", message = "Enter a valid mobile number")
     private String mobile;
 
     @NotNull
@@ -49,5 +49,5 @@ public class Seller {
 
     @OneToMany
     @JsonIgnore
-    private List<Product> products;
+    private List<Product> product;
 }

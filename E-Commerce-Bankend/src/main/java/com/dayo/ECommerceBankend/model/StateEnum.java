@@ -16,7 +16,7 @@ public enum StateEnum {
     EDO,
     EKITI,
     ENUGU,
-    FEDERAL_CAPITAL_TERRITORY  ,
+    FEDERAL_CAPITAL_TERRITORY,
     GOMBE,
     IMO,
     JIGAWA,

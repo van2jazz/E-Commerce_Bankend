@@ -1,6 +1,6 @@
 package com.dayo.ECommerceBankend.service;
 
-import com.dayo.ECommerceBankend.exception.ProductNotFound;
+import com.dayo.ECommerceBankend.exception.ProductNotFoundException;
 import com.dayo.ECommerceBankend.model.CartDTO;
 import com.dayo.ECommerceBankend.model.CartItem;
 import com.dayo.ECommerceBankend.model.Product;
@@ -18,10 +18,10 @@ public class CartItemServiceImpl implements CartItemService{
     @Override
     public CartItem createItemforCart(CartDTO cartdto) {
 
-        Product existingProduct = productDao.findById(cartdto.getProductId()).orElseThrow( () -> new ProductNotFound("Product Not found"));
+        Product existingProduct = productDao.findById(cartdto.getProductId()).orElseThrow( () -> new ProductNotFoundException("Product Not found"));
 
         if(existingProduct.getStatus().equals(ProductStatus.OUTOFSTOCK) || existingProduct.getQuantity() == 0) {
-            throw new ProductNotFound("Product OUT OF STOCK");
+            throw new ProductNotFoundException("Product OUT OF STOCK");
         }
 
         CartItem newItem = new CartItem();

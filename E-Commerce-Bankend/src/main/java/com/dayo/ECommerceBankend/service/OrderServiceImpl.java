@@ -14,6 +14,7 @@ import java.util.Optional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+
     @Autowired
     private OrderDao oDao;
 
@@ -39,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
             List<CartItem> productsInCart= loggedInCustomer.getCustomerCart().getCartItems();
             List<CartItem> productsInOrder = new ArrayList<>(productsInCart);
 
-            newOrder.setOrdercartItems(productsInOrder);
+            newOrder.setOrderCartItems(productsInOrder);
             newOrder.setTotal(loggedInCustomer.getCustomerCart().getCartTotal());
 
 
@@ -53,6 +54,11 @@ public class OrderServiceImpl implements OrderService {
                     newOrder.setCardNumber(odto.getCardNumber().getCardNumber());
                     newOrder.setAddress(loggedInCustomer.getAddress().get(odto.getAddressType()));
                     newOrder.setDate(LocalDate.now());
+
+
+
+
+
                     newOrder.setOrderStatus(OrderStatusValues.SUCCESS);
                     System.out.println(usersCardNumber);
                     List<CartItem> cartItemsList= loggedInCustomer.getCustomerCart().getCartItems();
@@ -122,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
             }
             else if(order.getOrderStatus()==OrderStatusValues.SUCCESS) {
                 order.setOrderStatus(OrderStatusValues.CANCELLED);
-                List<CartItem> cartItemsList= order.getOrdercartItems();
+                List<CartItem> cartItemsList= order.getOrderCartItems();
 
                 for(CartItem cartItem : cartItemsList ) {
                     Integer addedQuantity = cartItem.getCartProduct().getQuantity()+cartItem.getCartItemQuantity();
@@ -163,7 +169,7 @@ public class OrderServiceImpl implements OrderService {
                 existingOrder.setCardNumber(orderdto.getCardNumber().getCardNumber());
                 existingOrder.setAddress(existingOrder.getCustomer().getAddress().get(orderdto.getAddressType()));
                 existingOrder.setOrderStatus(OrderStatusValues.SUCCESS);
-                List<CartItem> cartItemsList= existingOrder.getOrdercartItems();
+                List<CartItem> cartItemsList= existingOrder.getOrderCartItems();
                 for(CartItem cartItem : cartItemsList ) {
                     Integer remainingQuantity = cartItem.getCartProduct().getQuantity()-cartItem.getCartItemQuantity();
                     if(remainingQuantity < 0 || cartItem.getCartProduct().getStatus() == ProductStatus.OUTOFSTOCK) {
@@ -209,6 +215,8 @@ public class OrderServiceImpl implements OrderService {
         else
             throw new OrderException("No Order exists with orderId "+orderId);
     }
+
+
 
 
 }

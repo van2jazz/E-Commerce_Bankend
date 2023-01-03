@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.dayo.ECommerceBankend.exception.CustomerException;
 import com.dayo.ECommerceBankend.model.Customer;
 import com.dayo.ECommerceBankend.model.UserSession;
 import com.dayo.ECommerceBankend.repository.CustomerDao;
@@ -34,49 +35,46 @@ public class LoginLogoutServiceImpl implements LoginLogoutService{
 	@Autowired
 	private SellerDao sellerDao;
 
- 
-	
-	// Method to login a customer
-
+    //Method to login customer
 	@Override
 	public UserSession loginCustomer(CustomerDTO loginCustomer) {
-		
+
 		Optional<Customer> res = customerDao.findByMobileNo(loginCustomer.getMobileId());
-		
+
 		if(res.isEmpty())
 			throw new CustomerNotFoundException("Customer record does not exist with given mobile number");
-		
+
 		Customer existingCustomer = res.get();
-		
+
 		Optional<UserSession> opt = sessionDao.findByUserId(existingCustomer.getCustomerId());
-		
+
 		if(opt.isPresent()) {
-			
+
 			UserSession user = opt.get();
-			
+
 			if(user.getSessionEndTime().isBefore(LocalDateTime.now())) {
-				sessionDao.delete(user);	
+				sessionDao.delete(user);
 			}
 			else
 				throw new LoginException("User already logged in");
-			
+
 		}
-		
-		
+
+
 		if(existingCustomer.getPassword().equals(loginCustomer.getPassword())) {
-		
+
 			UserSession newSession = new UserSession();
-			
+
 			newSession.setUserId(existingCustomer.getCustomerId());
 			newSession.setUserType("customer");
 			newSession.setSessionStartTime(LocalDateTime.now());
 			newSession.setSessionEndTime(LocalDateTime.now().plusHours(1));
-			
+
 			UUID uuid = UUID.randomUUID();
 			String token = "customer_" + uuid.toString().split("-")[0];
-			
+
 			newSession.setToken(token);
-			
+
 			return sessionDao.save(newSession);
 		}
 		else {
@@ -86,105 +84,105 @@ public class LoginLogoutServiceImpl implements LoginLogoutService{
 
 	
 	// Method to logout a customer
-	
 	@Override
-	public SessionDTO logoutCustomer(SessionDTO sessionToken) {
-		
-		String token = sessionToken.getToken();
-		
-		checkTokenStatus(token);
-		
-		Optional<UserSession> opt = sessionDao.findByToken(token);
-		
-		if(!opt.isPresent())
-			throw new LoginException("User not logged in. Invalid session token. Login Again.");
-		
-		UserSession session = opt.get();
-		
-		sessionDao.delete(session);
-		
-		sessionToken.setMessage("Logged out sucessfully.");
-		
-		return sessionToken;
-	}
+    public SessionDTO logoutCustomer(SessionDTO sessionToken){
+
+	    String token = sessionToken.getToken();
+
+	    checkTokenStatus(token);
+
+	    Optional<UserSession> opt = sessionDao.findByToken(token);
+
+	    if (!opt.isPresent())
+	    	throw new LoginException("User not logged in. Invalid session token. Login Again");
+
+	    UserSession session = opt.get();
+
+	    sessionDao.delete(session);
+
+	    sessionToken.setMessage("Logged out successfully");
+
+	    return sessionToken;
+
+    }
 	
 	
 	
 	// Method to check status of session token
-	
-	
+
 	@Override
-	public void checkTokenStatus(String token) {
-		
+	public void checkTokenStatus(String token){
+
 		Optional<UserSession> opt = sessionDao.findByToken(token);
-		
-		if(opt.isPresent()) {
+
+		if (opt.isPresent()) {
 			UserSession session = opt.get();
 			LocalDateTime endTime = session.getSessionEndTime();
 			boolean flag = false;
-			if(endTime.isBefore(LocalDateTime.now())) {
+			if (endTime.isBefore(LocalDateTime.now())) {
 				sessionDao.delete(session);
 				flag = true;
 			}
-			
+
 			deleteExpiredTokens();
-			if(flag)
-				throw new LoginException("Session expired. Login Again");
+			if (flag)
+				throw new LoginException("Session expired, login again please");
+		}else {
+			throw new LoginException("User not logged in, Invalid session token. Please login first");
 		}
-		else {
-			throw new LoginException("User not logged in. Invalid session token. Please login first.");
-		}
-		
+
 	}
+
 
 	
 	// Method to login a valid seller and generate a seller token
-	
 	@Override
 	public UserSession loginSeller(SellerDTO seller) {
-		
+
 		Optional<Seller> res = sellerDao.findByMobile(seller.getMobile());
-		
+
 		if(res.isEmpty())
 			throw new SellerNotFoundException("Seller record does not exist with given mobile number");
-		
+
 		Seller existingSeller = res.get();
-		
+
 		Optional<UserSession> opt = sessionDao.findByUserId(existingSeller.getSellerId());
-		
+
 		if(opt.isPresent()) {
-			
+
 			UserSession user = opt.get();
-			
+
 			if(user.getSessionEndTime().isBefore(LocalDateTime.now())) {
-				sessionDao.delete(user);	
+				sessionDao.delete(user);
 			}
 			else
 				throw new LoginException("User already logged in");
-			
+
 		}
-		
-		
+
+
 		if(existingSeller.getPassword().equals(seller.getPassword())) {
-		
+
 			UserSession newSession = new UserSession();
-			
+
 			newSession.setUserId(existingSeller.getSellerId());
 			newSession.setUserType("seller");
 			newSession.setSessionStartTime(LocalDateTime.now());
 			newSession.setSessionEndTime(LocalDateTime.now().plusHours(1));
-			
+
 			UUID uuid = UUID.randomUUID();
 			String token = "seller_" + uuid.toString().split("-")[0];
-			
+
 			newSession.setToken(token);
-			
+
 			return sessionDao.save(newSession);
 		}
 		else {
 			throw new LoginException("Password Incorrect. Try again.");
 		}
 	}
+
+
 
 	
 	// Method to logout a seller and delete his session token
@@ -205,7 +203,7 @@ public class LoginLogoutServiceImpl implements LoginLogoutService{
 		
 		sessionDao.delete(user);
 		
-		session.setMessage("Logged out sucessfully.");
+		session.setMessage("Logged out successfully.");
 		
 		return session;
 	}

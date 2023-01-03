@@ -11,13 +11,13 @@ public interface ProductService {
 
     public Product addProductToCatalog(String token, Product product);
 
-    public Product  getProductFromCatalogId(Integer id);
+    public Product  getProductFromCatalogById(Integer id);
 
     public String deleteProductFromCatalog(Integer id);
 
     public Product updateProductInCatalog(Product product);
 
-    public List<Product> getAllProductInCatalog();
+    public List<Product> getAllProductsInCatalog();
 
     public List<ProductDTO> getAllProductsOfSeller(Integer id);
 

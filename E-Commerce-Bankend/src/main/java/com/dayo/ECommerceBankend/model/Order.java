@@ -16,6 +16,7 @@ import java.util.List;
 @Setter
 @ToString
 @Entity
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -27,7 +28,7 @@ public class Order {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private OrderStatusValues orderStatusValues;
+    private OrderStatusValues orderStatus;
 
 
     private Double total;
@@ -43,5 +44,6 @@ public class Order {
     private List<CartItem> orderCartItems = new ArrayList<>();
 
     @ManyToOne
+    @JoinColumn(name = "address_id", referencedColumnName = "addressId")
     private Address address;
 }

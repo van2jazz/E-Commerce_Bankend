@@ -3,8 +3,7 @@ package com.dayo.ECommerceBankend.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,9 +11,10 @@ import javax.persistence.OneToOne;
 @Setter
 @ToString
 @Entity
-
 public class CartItem {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer cartItemId;
 
     @OneToOne

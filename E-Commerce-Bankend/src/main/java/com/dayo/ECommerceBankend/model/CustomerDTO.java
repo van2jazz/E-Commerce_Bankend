@@ -14,7 +14,7 @@ import javax.validation.constraints.Pattern;
 public class CustomerDTO {
 
     @NotNull
-    @Pattern(regexp = "[6789][0-9]{9}", message = "Enter valid mobile number")
+    @Pattern(regexp = "[234][0-9]{10}", message = "Enter valid mobile number")
     private String mobileId;
 
     @NotNull(message = "Please enter the password")

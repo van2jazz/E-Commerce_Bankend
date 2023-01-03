@@ -5,5 +5,5 @@ import com.dayo.ECommerceBankend.model.CartItem;
 
 public interface CartItemService {
 
-    public CartItem createItemForCart(CartDTO cartdto);
+    public CartItem createItemforCart(CartDTO cartdto);
 }

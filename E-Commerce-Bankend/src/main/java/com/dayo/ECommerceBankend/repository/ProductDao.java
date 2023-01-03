@@ -17,16 +17,17 @@ public interface ProductDao extends JpaRepository<Product, Integer> {
 
     @Query("select new com.dayo.ECommerceBankend.model.ProductDTO(p.productName,p.manufacturer,p.price,p.quantity)"
             + "from Product p where p.category=:catenum")
-    public List<ProductDao> getProductsInACategory(@Param("catenum") CategoryEnum catenum);
+    public List<ProductDTO> getAllProductsInACategory(@Param("catenum") CategoryEnum catenum);
 
 
     @Query("select new com.dayo.ECommerceBankend.model.ProductDTO(p.productName,p.manufacturer, p.price, p.quantity)"
             + "from Product p where p.status=:status")
-    public List<ProductDTO> getProductWithStatus(@Param("status")ProductStatus status);
+    public List<ProductDTO> getProductsWithStatus(@Param("status")ProductStatus status);
 
     @Query("select new com.dayo.ECommerceBankend.model.ProductDTO(p.productName,p.manufacturer,p.price,p.quantity)"
     + "from Product p where p.seller.sellerId=:id")
-    public List<ProductDTO> getProductsOfSeller(@Param("id")Integer id);
+    public List<ProductDTO> getProductsOfASeller(@Param("id")Integer id);
+
 
 
 

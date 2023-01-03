@@ -26,5 +26,5 @@ public interface OrderService {
 
     public Customer getCustomerByOrderid(Integer orderId) throws OrderException;
 
-    //public Customer getCustomerIdByToken(String token) throws CustomerNotFoundException;
+//    public Customer getCustomerIdByToken(String token) throws CustomerNotFoundException;
 }

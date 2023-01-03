@@ -1,8 +1,8 @@
 package com.dayo.ECommerceBankend.service;
 
-import com.dayo.ECommerceBankend.model.Product;
-import com.dayo.ECommerceBankend.model.ProductDTO;
-import com.dayo.ECommerceBankend.model.Seller;
+import com.dayo.ECommerceBankend.exception.CategoryNotFoundException;
+import com.dayo.ECommerceBankend.exception.ProductNotFoundException;
+import com.dayo.ECommerceBankend.model.*;
 import com.dayo.ECommerceBankend.repository.ProductDao;
 import com.dayo.ECommerceBankend.repository.SellerDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,15 +38,14 @@ public class ProductServiceImpl implements ProductService {
 
             product.setSeller(seller);
 
+
             prod = prodDao.save(product);
-            ;
 
             seller.getProduct().add(product);
             sDao.save(seller);
 
         } else {
             prod = prodDao.save(product);
-            ;
         }
 
         return prod;
@@ -79,7 +78,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product updateProductIncatalog(Product prod) throws ProductNotFoundException {
+    public Product updateProductInCatalog(Product prod) throws ProductNotFoundException {
 
         Optional<Product> opt = prodDao.findById(prod.getProductId());
 
@@ -92,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAllProductsIncatalog() {
+    public List<Product> getAllProductsInCatalog() {
         List<Product> list = prodDao.findAll();
 
         if (list.size() > 0) {

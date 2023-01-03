@@ -40,12 +40,12 @@ public class Product {
     private Integer quantity;
 
     @Enumerated(EnumType.STRING)
-    private Enum category;
+    private CategoryEnum category;
 
     @Enumerated(EnumType.STRING)
-    private Enum status;
+    private ProductStatus status;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JsonIgnore
     private Seller seller;
 

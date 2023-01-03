@@ -9,10 +9,13 @@ import com.dayo.ECommerceBankend.repository.CustomerDao;
 import com.dayo.ECommerceBankend.repository.ProductDao;
 import com.dayo.ECommerceBankend.repository.SessionDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class CartServiceImpl implements CartService {
 
     @Autowired
