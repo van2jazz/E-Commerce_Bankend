@@ -17,7 +17,6 @@ public class CustomerController {
     CustomerService customerService;
 
     //To get a list of all customer
-
     @GetMapping("/customers")
     public ResponseEntity<List<Customer>> getAllCustomersHandler(@RequestHeader("token") String token){
         return new ResponseEntity<>(customerService.getAllCustomers(token), HttpStatus.ACCEPTED);
