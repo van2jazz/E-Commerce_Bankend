@@ -67,7 +67,7 @@ public class CustomerServiceImpl implements CustomerService{
         Optional<Customer> opt = customerDao.findById(user.getUserId());
 
         if (opt.isEmpty())
-            throw new CustomerNotFoundException("Customer doe not exist");
+            throw new CustomerNotFoundException("Customer does not exist");
 
         Customer existingCustomer = opt.get();
 
@@ -114,7 +114,7 @@ public class CustomerServiceImpl implements CustomerService{
         Optional<Customer> res = customerDao.findByEmailId(customer.getEmailId());
 
         if(opt.isEmpty() && res.isEmpty())
-            throw new CustomerNotFoundException("Customer does not exist with given mobile no or email-id");
+            throw new CustomerNotFoundException("Customer does not exist with given mobile number or email_Id");
 
         Customer existingCustomer = null;
 
@@ -220,7 +220,7 @@ public class CustomerServiceImpl implements CustomerService{
         Customer existingCustomer = opt.get();
 
 
-        if(customerDTO.getMobileId().equals(existingCustomer.getMobileNo()) == false) {
+        if(customerDTO.getMobileNo().equals(existingCustomer.getMobileNo()) == false) {
             throw new CustomerException("Verification error. Mobile number does not match");
         }
 
@@ -321,7 +321,7 @@ public class CustomerServiceImpl implements CustomerService{
 
         session.setToken(token);
 
-        if(existingCustomer.getMobileNo().equals(customerDTO.getMobileId())
+        if(existingCustomer.getMobileNo().equals(customerDTO.getMobileNo())
                 && existingCustomer.getPassword().equals(customerDTO.getPassword())) {
 
             customerDao.delete(existingCustomer);

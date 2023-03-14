@@ -1,0 +1,106 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.security.auth.login.LoginException;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class CustomerServiceImplTest {
+
+    @Mock
+    private CustomerDao customerDao;
+
+    @Mock
+    private LoginService loginService;
+
+    @Mock
+    private SessionDao sessionDao;
+
+    private CustomerServiceImpl customerService;
+
+    private Customer existingCustomer;
+
+    @BeforeEach
+    public void setUp() {
+        customerService = new CustomerServiceImpl(customerDao, loginService, sessionDao);
+
+        existingCustomer = new Customer();
+        existingCustomer.setCustomerId(1);
+        existingCustomer.setFirstName("John");
+        existingCustomer.setLastName("Doe");
+        existingCustomer.setMobileNo("2345678901");
+        existingCustomer.setEmailId("johndoe@example.com");
+        existingCustomer.setPassword("password");
+        existingCustomer.setAddress(new HashMap<>());
+        existingCustomer.setCreatedOn(LocalDateTime.now());
+    }
+
+    @Test
+    public void testUpdateCustomerMobileNoOrEmailId() throws CustomerNotFoundException {
+        CustomerUpdateDTO customerUpdateDTO = new CustomerUpdateDTO();
+        customerUpdateDTO.setEmailId("johndoe2@example.com");
+        customerUpdateDTO.setMobileNo("2345678901");
+
+        String token = "customer:token";
+
+        UserSession userSession = new UserSession();
+        userSession.setToken(token);
+        userSession.setUserId(1);
+
+        when(sessionDao.findByToken(token)).thenReturn(Optional.of(userSession));
+        when(customerDao.findById(1)).thenReturn(Optional.of(existingCustomer));
+
+        Customer updatedCustomer = customerService.updateCustomerMobileNoOrEmailId(customerUpdateDTO, token);
+
+        assertEquals(existingCustomer, updatedCustomer);
+        assertEquals(customerUpdateDTO.getEmailId(), updatedCustomer.getEmailId());
+        assertEquals(customerUpdateDTO.getMobileNo(), updatedCustomer.getMobileNo());
+
+        verify(loginService).checkTokenStatus(token);
+        verify(customerDao).save(existingCustomer);
+    }
+
+    @Test
+    public void testUpdateCustomerMobileNoOrEmailId_WithInvalidSessionToken() {
+        CustomerUpdateDTO customerUpdateDTO = new CustomerUpdateDTO();
+        customerUpdateDTO.setEmailId("johndoe2@example.com");
+        customerUpdateDTO.setMobileNo("2345678901");
+
+        String token = "invalid_token";
+
+        assertThrows(LoginException.class, () -> customerService.updateCustomerMobileNoOrEmailId(customerUpdateDTO, token));
+
+        verify(loginService, never()).checkTokenStatus(token);
+        verify(customerDao, never()).save(any(Customer.class));
+    }
+
+    @Test
+    public void testUpdateCustomerMobileNoOrEmailId_WithNonExistingCustomer() {
+        CustomerUpdateDTO customerUpdateDTO = new CustomerUpdateDTO();
+        customerUpdateDTO.setEmailId("johndoe2@example.com");
+        customerUpdateDTO.setMobileNo("2345678901");
+
+        String token = "customer:token";
+
+        UserSession userSession = new UserSession();
+        userSession.setToken(token);
+        userSession.setUserId(1);
+
+        when(sessionDao.findByToken(token)).thenReturn(Optional.of(userSession));
+        when(customerDao.findById(1)).thenReturn(Optional.empty());
+
+        assertThrows(CustomerNotFoundException.class, () -> customerService.updateCustomerMobileNoOrEmailId(customerUpdateDTO, token));
+
+        verify(loginService).checkTokenStatus(token);
+        verify(customerDao, never()).save(any(Customer.class));

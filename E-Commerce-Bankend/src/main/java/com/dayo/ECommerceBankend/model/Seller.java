@@ -29,13 +29,13 @@ public class Seller {
     @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your first name")
     private String firstName;
 
-    @NotNull(message = "Enter your lastName")
-    @Pattern(regexp = "[A-Za-z.\\s] +", message = "Enter your last name")
+    @NotNull(message = "Last name cannot be blanked")
+    @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your last name")
     private String lastName;
 
     @NotNull(message = "Enter Mobile Number")
     @Column(unique = true)
-    @Pattern(regexp = "[234]{1}[0-9]{10}", message = "Enter a valid mobile number")
+    @Pattern(regexp = "[234]{3}[0-9]{10}", message = "Enter a valid mobile number")
     private String mobile;
 
     @NotNull

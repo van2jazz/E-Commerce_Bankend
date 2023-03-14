@@ -1,0 +1,259 @@
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@Service
+public class CustomerServiceImpl
+
+    public Customer updateCustomerMobileNoOrEmailId(CustomerUpdateDTO customerUpdateDTO, String token) throws CustomerNotFoundException {
+
+        if(token.contains("customer") == false) {
+            throw new LoginException("Invalid session token for customer");
+        }
+
+        loginService.checkTokenStatus(token);
+
+        UserSession user = sessionDao.findByToken(token).get();
+
+        Optional<Customer> opt = customerDao.findById(user.getUserId());
+
+        if(opt.isEmpty())
+            throw new CustomerNotFoundException("Customer does not exist");
+
+        Customer existingCustomer = opt.get();
+
+        if(customerUpdateDTO.getEmailId() != null) {
+            existingCustomer.setEmailId(customerUpdateDTO.getEmailId());
+        }
+
+
+        existingCustomer.setMobileNo(customerUpdateDTO.getMobileNo());
+
+        customerDao.save(existingCustomer);
+
+        return existingCustomer;
+
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    @ToString
+    public class CustomerUpdateDTO  {
+
+        @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters for first name")
+        private String firstName;
+
+        @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters for last name")
+        private String lastName;
+
+        @NotNull(message = "Please enter the mobile Number")
+        @Pattern(regexp = "[234]{1}[0-9]{10}", message = "Enter valid mobile number")
+        private String mobileNo;
+
+        @Column(unique = true)
+        @Email
+        private String emailId;
+
+        @Pattern(regexp = "[A-Za-z0-9!@#$%^&*_]{8,15}", message = "Password must be 8-15 characters in length and can include A-Z, a-z, 0-9, or special characters !@#$%^&*_")
+        private String password;
+
+        private Map<String, Address> address = new HashMap<>();
+    }
+
+    package com.dayo.ECommerceBankend.model;
+
+    import lombok.AllArgsConstructor;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+
+    import javax.validation.constraints.Email;
+    import javax.validation.constraints.NotNull;
+    import javax.validation.constraints.Pattern;
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Data
+    public class CustomerDTO {
+
+        @NotNull
+        @Pattern(regexp = "[234]{3}[0-9]{10}", message = "Enter valid mobile number")
+        private String mobileNo; //change to mobileid
+
+        @NotNull(message = "Please enter the password")
+        @Pattern(regexp = "[A-Za-z0-9!@#$%^&*_]{8,15}", message = "Password must be 8-15 characters in length and can include A-Z, a-z, 0-9, or special characters !@#$%^&*_")
+        private String password;
+
+        @Email
+        private String emailId;
+    }
+
+
+    import lombok.*;
+
+    import javax.persistence.*;
+    import javax.validation.constraints.Email;
+    import javax.validation.constraints.NotNull;
+    import javax.validation.constraints.Pattern;
+    import java.time.LocalDateTime;
+    import java.util.ArrayList;
+    import java.util.HashMap;
+    import java.util.List;
+    import java.util.Map;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ToString
+    @Entity
+
+    public class Customer {
+
+        @Id
+        @GeneratedValue (strategy = GenerationType.AUTO)
+        private Integer customerId;
+
+        @NotNull(message = "First name cannot be blanked")
+        @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your first name")
+        private String firstName;
+
+        @NotNull(message = "Last name cannot be blanked")
+        @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your last name")
+        private String lastName;
+
+        @NotNull(message = "Enter Mobile Number")
+        @Pattern(regexp = "[234]{3}[0-9]{10}", message = "Enter a valid mobile number")
+        private String mobileNo;
+
+        @NotNull(message = "Enter your email id")
+        @Column(unique = true)
+        @Email
+        private String emailId;
+
+        @NotNull(message = "Enter the password")
+        @Pattern(regexp = "[A-Za-z0-9!@#$%^&*_]{8,15}", message = "Use 8 characters or more for your password")
+        private String password;
+
+
+        private LocalDateTime createdOn;
+
+        @Embedded
+        private CreditCard creditCard;
+
+        @OneToMany
+        @JoinTable(name = "customer_address_mapping",
+                joinColumns = {
+                         @JoinColumn(name = "customer_id", referencedColumnName = "customerId")
+                 },
+                inverseJoinColumns = {
+                         @JoinColumn(name = "address_id", referencedColumnName = "addressId")
+                })
+        private Map<String, Address> address = new HashMap<>();
+
+
+        //Order Relationship
+        @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
+        private List<Order> orders = new ArrayList<>();
+
+        //Customer - Cart Relationship
+        @OneToOne(cascade = CascadeType.ALL)
+        private Cart customerCart;
+
+
+    }
+
+    import lombok.AllArgsConstructor;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+
+    import javax.validation.constraints.NotNull;
+    import javax.validation.constraints.Pattern;
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    public class CreditCard {
+
+        @NotNull
+        @Pattern(regexp = "[0-9]{16,18}", message = "Invalid card number")
+        private String cardNumber;
+
+        @Pattern(regexp = "[0-9]{2}/[0-9]{2,4}", message = "Invalid validity. Enter in MM/YY or MM/YYYY format")
+        private String cardValidity;
+
+        @Pattern(regexp = "[0-9]{3}", message = "Invalid CVV. Must be numeric 3 digits length.")
+        private String cardCVV;
+    }
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+@EqualsAndHashCode
+@Entity
+public class Address {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer addressId;
+
+    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Input a valid street number")
+    private String streetNo;
+
+    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Not a valid Street name")
+    private String streetName;
+
+    @NotNull
+    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Not a valid locality name")
+    private String locality;
+
+    @NotNull(message = "City name cannot be null")
+    @Pattern(regexp = "[A-Za-z\\s]{2,}", message = "Not a valid city name")
+    private String city;
+
+    @NotNull(message = "State name cannot be null")
+    private String state;
+
+    @NotNull(message = "Pincode cannot be null")
+    @Pattern(regexp = "[0-9]{6}", message = "Pincode not valid. Must be 6 digits")
+    private String pincode;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Customer customer;
+}
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Entity
+public class UserSession {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer sessionId;
+
+    @Column(unique = true)
+    private String token;
+
+    @Column(unique = true)
+    private Integer userId;
+
+    private String userType;
+
+    private LocalDateTime sessionStartTime;
+
+    private LocalDateTime sessionEndTime;
+}
+
+

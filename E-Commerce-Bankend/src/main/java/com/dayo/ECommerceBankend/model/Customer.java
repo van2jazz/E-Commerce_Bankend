@@ -24,16 +24,16 @@ public class Customer {
     @GeneratedValue (strategy = GenerationType.AUTO)
     private Integer customerId;
 
-    @NotNull(message = "Cannot be blanked")
+    @NotNull(message = "First name cannot be blanked")
     @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your first name")
     private String firstName;
 
-    @NotNull(message = "Cannot be blanked")
-    @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your first name")
+    @NotNull(message = "Last name cannot be blanked")
+    @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your last name")
     private String lastName;
 
     @NotNull(message = "Enter Mobile Number")
-    @Pattern(regexp = "[234]{1}[0-9]{10}", message = "Enter a valid mobile number")
+    @Pattern(regexp = "[234]{3}[0-9]{10}", message = "Enter a valid mobile number")
     private String mobileNo;
 
     @NotNull(message = "Enter your email id")
@@ -69,4 +69,6 @@ public class Customer {
     //Customer - Cart Relationship
     @OneToOne(cascade = CascadeType.ALL)
     private Cart customerCart;
+
+
 }

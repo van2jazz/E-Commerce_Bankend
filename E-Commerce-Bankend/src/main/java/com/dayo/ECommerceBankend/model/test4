@@ -1,0 +1,497 @@
+public class CustomerService{
+@Override
+    public List<Customer> getAllCustomers(String token) throws CustomerNotFoundException{
+
+        //update to seller
+
+        if (token.contains("seller")==false){
+            throw new LoginException("Invalid session token");
+        }
+
+        loginService.checkTokenStatus(token);
+
+        List<Customer> customers = customerDao.findAll();
+
+        if(customers.size() == 0)
+            throw new CustomerNotFoundException("No record exists");
+
+        return customers;
+    }
+
+  }
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @Data
+  @Entity
+  public class UserSession {
+
+      @Id
+      @GeneratedValue(strategy = GenerationType.AUTO)
+      private Integer sessionId;
+
+      @Column(unique = true)
+      private String token;
+
+      @Column(unique = true)
+      private Integer userId;
+
+      private String userType;
+
+      private LocalDateTime sessionStartTime;
+
+      private LocalDateTime sessionEndTime;
+  }
+
+
+@Repository
+public interface SessionDao extends JpaRepository<UserSession, Integer> {
+
+    Optional<UserSession> findByToken(String  token);
+
+    Optional<UserSession> findByUserId(Integer userId);
+}
+
+
+
+        import lombok.*;
+
+        import javax.persistence.*;
+        import javax.validation.constraints.Email;
+        import javax.validation.constraints.NotNull;
+        import javax.validation.constraints.Pattern;
+        import java.time.LocalDateTime;
+        import java.util.ArrayList;
+        import java.util.HashMap;
+        import java.util.List;
+        import java.util.Map;
+
+        @Data
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @ToString
+        @Entity
+
+        public class Customer {
+
+            @Id
+            @GeneratedValue (strategy = GenerationType.AUTO)
+            private Integer customerId;
+
+            @NotNull(message = "First name cannot be blanked")
+            @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your first name")
+            private String firstName;
+
+            @NotNull(message = "Last name cannot be blanked")
+            @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter your last name")
+            private String lastName;
+
+            @NotNull(message = "Enter Mobile Number")
+            @Pattern(regexp = "[234]{3}[0-9]{10}", message = "Enter a valid mobile number")
+            private String mobileNo;
+
+            @NotNull(message = "Enter your email id")
+            @Column(unique = true)
+            @Email
+            private String emailId;
+
+            @NotNull(message = "Enter the password")
+            @Pattern(regexp = "[A-Za-z0-9!@#$%^&*_]{8,15}", message = "Use 8 characters or more for your password")
+            private String password;
+
+
+            private LocalDateTime createdOn;
+
+            @Embedded
+            private CreditCard creditCard;
+
+            @OneToMany
+            @JoinTable(name = "customer_address_mapping",
+                    joinColumns = {
+                             @JoinColumn(name = "customer_id", referencedColumnName = "customerId")
+                     },
+                    inverseJoinColumns = {
+                             @JoinColumn(name = "address_id", referencedColumnName = "addressId")
+                    })
+            private Map<String, Address> address = new HashMap<>();
+
+
+            //Order Relationship
+            @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
+            private List<Order> orders = new ArrayList<>();
+
+            //Customer - Cart Relationship
+            @OneToOne(cascade = CascadeType.ALL)
+            private Cart customerCart;
+        }
+
+
+
+@Repository
+public interface CustomerDao extends JpaRepository<Customer, Integer> {
+
+    Optional<Customer> findByMobileNo(String mobileNumber);
+
+    Optional<Customer> findByEmailId(String emailId);
+
+    Optional<Customer> findByMobileNoOrEmailId(String mobileNo, String emailId);
+}
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Entity
+public class Cart {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer cartId;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<CartItem> cartItems = new ArrayList<>();
+
+    private Double cartTotal;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Customer customer;
+
+}
+
+@Entity
+public class Address {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer addressId;
+
+    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Input a valid street number")
+    private String streetNo;
+
+    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Not a valid Street name")
+    private String streetName;
+
+    @NotNull
+    @Pattern(regexp = "[A-Za-z0-9\\s-]{3,}", message = "Not a valid locality name")
+    private String locality;
+
+    @NotNull(message = "City name cannot be null")
+    @Pattern(regexp = "[A-Za-z\\s]{2,}", message = "Not a valid city name")
+    private String city;
+
+    @NotNull(message = "State name cannot be null")
+    private String state;
+
+    @NotNull(message = "Pincode cannot be null")
+    @Pattern(regexp = "[0-9]{6}", message = "Pincode not valid. Must be 6 digits")
+    private String pincode;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Customer customer;
+}
+
+public class CreditCard {
+
+    @NotNull
+    @Pattern(regexp = "[0-9]{16,18}", message = "Invalid card number")
+    private String cardNumber;
+
+    @Pattern(regexp = "[0-9]{2}/[0-9]{2,4}", message = "Invalid validity. Enter in MM/YY or MM/YYYY format")
+    private String cardValidity;
+
+    @Pattern(regexp = "[0-9]{3}", message = "Invalid CVV. Must be numeric 3 digits length.")
+    private String cardCVV;
+}
+
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
+@Entity
+@Table(name = "orders")
+public class Order {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer OrderId;
+
+    @PastOrPresent
+    private LocalDate date;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private OrderStatusValues orderStatus;
+
+
+    private Double total;
+
+    private String cardNumber;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "customer_id", referencedColumnName = "customerId")
+    private Customer customer;
+
+    @OneToMany
+    private List<CartItem> orderCartItems = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "address_id", referencedColumnName = "addressId")
+    private Address address;
+}
+
+@Entity
+public class CartItem {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer cartItemId;
+
+    @OneToOne
+    @JsonIgnoreProperties(value = {
+            "productId",
+            "seller",
+            "quality"
+    })
+    private Product cartProduct;
+
+    private Integer cartItemQuantity;
+}
+*****
+package com.dayo.ECommerceBankend.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import com.dayo.ECommerceBankend.exception.CustomerException;
+import com.dayo.ECommerceBankend.model.Customer;
+import com.dayo.ECommerceBankend.model.UserSession;
+import com.dayo.ECommerceBankend.repository.CustomerDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.dayo.ECommerceBankend.exception.CustomerNotFoundException;
+import com.dayo.ECommerceBankend.exception.LoginException;
+import com.dayo.ECommerceBankend.exception.SellerNotFoundException;
+import com.dayo.ECommerceBankend.model.CustomerDTO;
+import com.dayo.ECommerceBankend.model.Seller;
+import com.dayo.ECommerceBankend.model.SellerDTO;
+import com.dayo.ECommerceBankend.model.SessionDTO;
+import com.dayo.ECommerceBankend.repository.SellerDao;
+import com.dayo.ECommerceBankend.repository.SessionDao;
+
+@Service
+public class LoginLogoutServiceImpl implements LoginLogoutService{
+
+
+	@Autowired
+	private SessionDao sessionDao;
+
+	@Autowired
+	private CustomerDao customerDao;
+
+	@Autowired
+	private SellerDao sellerDao;
+
+    //Method to login customer
+	@Override
+	public UserSession loginCustomer(CustomerDTO loginCustomer) {
+
+		Optional<Customer> res = customerDao.findByMobileNo(loginCustomer.getMobileNo());
+
+		if(res.isEmpty())
+			throw new CustomerNotFoundException("Customer record does not exist with given mobile number");
+
+		Customer existingCustomer = res.get();
+
+		Optional<UserSession> opt = sessionDao.findByUserId(existingCustomer.getCustomerId());
+
+		if(opt.isPresent()) {
+
+			UserSession user = opt.get();
+
+			if(user.getSessionEndTime().isBefore(LocalDateTime.now())) {
+				sessionDao.delete(user);
+			}
+			else
+				throw new LoginException("User already logged in");
+
+		}
+
+
+		if(existingCustomer.getPassword().equals(loginCustomer.getPassword())) {
+
+			UserSession newSession = new UserSession();
+
+			newSession.setUserId(existingCustomer.getCustomerId());
+			newSession.setUserType("customer");
+			newSession.setSessionStartTime(LocalDateTime.now());
+			newSession.setSessionEndTime(LocalDateTime.now().plusHours(1));
+
+			UUID uuid = UUID.randomUUID();
+			String token = "customer_" + uuid.toString().split("-")[0];
+
+			newSession.setToken(token);
+
+			return sessionDao.save(newSession);
+		}
+		else {
+			throw new LoginException("Password Incorrect. Try again.");
+		}
+	}
+
+
+	// Method to logout a customer
+	@Override
+    public SessionDTO logoutCustomer(SessionDTO sessionToken){
+
+	    String token = sessionToken.getToken();
+
+	    checkTokenStatus(token);
+
+	    Optional<UserSession> opt = sessionDao.findByToken(token);
+
+	    if (!opt.isPresent())
+	    	throw new LoginException("User not logged in. Invalid session token. Login Again");
+
+	    UserSession session = opt.get();
+
+	    sessionDao.delete(session);
+
+	    sessionToken.setMessage("Logged out successfully");
+
+	    return sessionToken;
+
+    }
+
+
+
+	// Method to check status of session token
+
+	@Override
+	public void checkTokenStatus(String token){
+
+		Optional<UserSession> opt = sessionDao.findByToken(token);
+
+		if (opt.isPresent()) {
+			UserSession session = opt.get();
+			LocalDateTime endTime = session.getSessionEndTime();
+			boolean flag = false;
+			if (endTime.isBefore(LocalDateTime.now())) {
+				sessionDao.delete(session);
+				flag = true;
+			}
+
+			deleteExpiredTokens();
+			if (flag)
+				throw new LoginException("Session expired, login again please");
+		}else {
+			throw new LoginException("User not logged in, Invalid session token. Please login first");
+		}
+
+	}
+
+
+
+	// Method to login a valid seller and generate a seller token
+	@Override
+	public UserSession loginSeller(SellerDTO seller) {
+
+		Optional<Seller> res = sellerDao.findByMobile(seller.getMobile());
+
+		if(res.isEmpty())
+			throw new SellerNotFoundException("Seller record does not exist with given mobile number");
+
+		Seller existingSeller = res.get();
+
+		Optional<UserSession> opt = sessionDao.findByUserId(existingSeller.getSellerId());
+
+		if(opt.isPresent()) {
+
+			UserSession user = opt.get();
+
+			if(user.getSessionEndTime().isBefore(LocalDateTime.now())) {
+				sessionDao.delete(user);
+			}
+			else
+				throw new LoginException("User already logged in");
+
+		}
+
+
+		if(existingSeller.getPassword().equals(seller.getPassword())) {
+
+			UserSession newSession = new UserSession();
+
+			newSession.setUserId(existingSeller.getSellerId());
+			newSession.setUserType("seller");
+			newSession.setSessionStartTime(LocalDateTime.now());
+			newSession.setSessionEndTime(LocalDateTime.now().plusHours(1));
+
+			UUID uuid = UUID.randomUUID();
+			String token = "seller_" + uuid.toString().split("-")[0];
+
+			newSession.setToken(token);
+
+			return sessionDao.save(newSession);
+		}
+		else {
+			throw new LoginException("Password Incorrect. Try again.");
+		}
+	}
+
+
+
+
+	// Method to logout a seller and delete his session token
+
+	@Override
+	public SessionDTO logoutSeller(SessionDTO session) {
+
+		String token = session.getToken();
+
+		checkTokenStatus(token);
+
+		Optional<UserSession> opt = sessionDao.findByToken(token);
+
+		if(!opt.isPresent())
+			throw new LoginException("User not logged in. Invalid session token. Login Again.");
+
+		UserSession user = opt.get();
+
+		sessionDao.delete(user);
+
+		session.setMessage("Logged out successfully.");
+
+		return session;
+	}
+
+
+	// Method to delete expired tokens
+
+	@Override
+	public void deleteExpiredTokens() {
+
+		System.out.println("Inside delete tokens");
+
+		List<UserSession> users = sessionDao.findAll();
+
+		System.out.println(users);
+
+		if(users.size() > 0) {
+			for(UserSession user:users) {
+				System.out.println(user.getUserId());
+				LocalDateTime endTime = user.getSessionEndTime();
+				if(endTime.isBefore(LocalDateTime.now())) {
+					System.out.println(user.getUserId());
+					sessionDao.delete(user);
+				}
+			}
+		}
+	}
+
+}

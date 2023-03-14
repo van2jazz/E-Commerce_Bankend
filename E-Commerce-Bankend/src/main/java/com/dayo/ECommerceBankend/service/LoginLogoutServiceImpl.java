@@ -39,7 +39,7 @@ public class LoginLogoutServiceImpl implements LoginLogoutService{
 	@Override
 	public UserSession loginCustomer(CustomerDTO loginCustomer) {
 
-		Optional<Customer> res = customerDao.findByMobileNo(loginCustomer.getMobileId());
+		Optional<Customer> res = customerDao.findByMobileNo(loginCustomer.getMobileNo());
 
 		if(res.isEmpty())
 			throw new CustomerNotFoundException("Customer record does not exist with given mobile number");

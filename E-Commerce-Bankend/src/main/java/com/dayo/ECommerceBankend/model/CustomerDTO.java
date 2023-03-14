@@ -14,8 +14,8 @@ import javax.validation.constraints.Pattern;
 public class CustomerDTO {
 
     @NotNull
-    @Pattern(regexp = "[234][0-9]{10}", message = "Enter valid mobile number")
-    private String mobileId;
+    @Pattern(regexp = "[234]{3}[0-9]{10}", message = "Enter valid mobile number")
+    private String mobileNo; //change to mobileid
 
     @NotNull(message = "Please enter the password")
     @Pattern(regexp = "[A-Za-z0-9!@#$%^&*_]{8,15}", message = "Password must be 8-15 characters in length and can include A-Z, a-z, 0-9, or special characters !@#$%^&*_")
